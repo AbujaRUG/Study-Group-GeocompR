@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 <!-- README.md is generated from README.Rmd. Please edit that file - rmarkdown::render('README.Rmd', output_format = 'github_document', output_file = 'README.md') -->
 
@@ -380,3 +381,7 @@ When you export the citations as a .bib file from Zotero, use the
 
 We use Zotero because it is a powerful open source reference manager
 that integrates well with citation tools in VS Code and RStudio.
+=======
+# Study-Group-GeocompR
+Study group - Geocomputation with R
+>>>>>>> Initial commit
