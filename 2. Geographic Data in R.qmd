@@ -176,7 +176,6 @@ asia = st_union(world_asia)
 # ?st_union
 ```
 
-
 ```{r}
 # run the two lines of code together
 plot(world["pop"], reset = FALSE)
@@ -280,7 +279,9 @@ Summarily, Simple features are simply data frames (square tables), but with spat
 #### 2.2.6 Simple feature geometries (sfg)
 
 -   sfg class represents the different simple feature geometry types in R: point, linestring, polygon (and their ‘multi’ equivalents, such as multipoints) or geometry collection.
+
 -   set of functions to create simple feature geometry objects (sfg) from scratch.
+
     -   functions are simple and consistent, as they all start with the st\_ prefix and end with the name of the geometry type in lowercase letters:
         -   A point: [`st_point()`](https://r-spatial.github.io/sf/reference/st.html)
         -   A linestring: [`st_linestring()`](https://r-spatial.github.io/sf/reference/st.html)
@@ -290,11 +291,10 @@ Summarily, Simple features are simply data frames (square tables), but with spat
         -   A multipolygon: [`st_multipolygon()`](https://r-spatial.github.io/sf/reference/st.html)
         -   A geometry collection: [`st_geometrycollection()`](https://r-spatial.github.io/sf/reference/st.html)
 
+-   sfg objects can be created from three base R data types:
 
-- sfg objects can be created from three base R data types:
+    -   A numeric vector: a single point
 
-  - A numeric vector: a single point
-  
 ```{r}
 st_point(c(5, 2))                 # XY point - XY (2D coordinates)
 #> POINT (5 2)
@@ -305,7 +305,7 @@ st_point(c(5, 2, 1), dim = "XYM") # XYM point - XYM type must be specified using
 st_point(c(5, 2, 3, 1))           # XYZM point - XYZM (3D with an additional variable, typically measurement accuracy)
 #> POINT ZM (5 2 3 1)
 ```
-  
+
 Let's create the maps
 
 ```{r}
@@ -314,9 +314,9 @@ library(mapview)
 mapview(st_point(c(5, 2, 1), dim = "XYM"))
 ```
 
-  - A matrix: a set of points, where each row represents a point, a multipoint or linestring
-  
-    - MULTIPOINT
+-   A matrix: a set of points, where each row represents a point, a multipoint or linestring
+
+    -   MULTIPOINT
 
 ```{r}
 # the rbind function simplifies the creation of matrices
@@ -329,18 +329,16 @@ linestring_matrix = rbind(c(1, 5), c(4, 4), c(4, 1), c(2, 2), c(3, 2))
 st_linestring(linestring_matrix)
 #> LINESTRING (1 5, 4 4, 4 1, 2 2, 3 2)
 ```
-  
-  
+
 Create the map
 
 ```{r}
 mapview(st_multipoint(multipoint_matrix))
 ```
 
+-   A list: a collection of objects such as matrices, multilinestrings or geometry collections
 
-  - A list: a collection of objects such as matrices, multilinestrings or geometry collections        
-
-    - POLYGON
+    -   POLYGON
 
 ```{r}
 ## POLYGON
@@ -355,7 +353,7 @@ Create the map
 mapview(st_polygon(polygon_list))
 ```
 
-  - POLYGON with a hole
+-   POLYGON with a hole
 
 ```{r}
 ## POLYGON with a hole
@@ -366,14 +364,13 @@ st_polygon(polygon_with_hole_list)
 #> POLYGON ((1 5, 2 2, 4 1, 4 4, 1 5), (2 4, 3 4, 3 3, 2 3, 2 4))
 ```
 
-
 Create the map
 
 ```{r}
 mapview(st_polygon(polygon_with_hole_list))
 ```
 
-  -  MULTILINESTRING
+-   MULTILINESTRING
 
 ```{r}
 ## MULTILINESTRING
@@ -389,7 +386,7 @@ Create the map
 mapview(st_multilinestring(multilinestring_list))
 ```
 
-  - MULTIPOLYGON
+-   MULTIPOLYGON
 
 ```{r}
 ## MULTIPOLYGON
@@ -399,7 +396,7 @@ st_multipolygon(multipolygon_list)
 #> MULTIPOLYGON (((1 5, 2 2, 4 1, 4 4, 1 5)), ((0 2, 1 2, 1 3, 0 3, 0 2)))
 ```
 
-  - GEOMETRYCOLLECTION
+-   GEOMETRYCOLLECTION
 
 ```{r}
 ## GEOMETRYCOLLECTION
@@ -418,4 +415,145 @@ mapview(st_geometrycollection(geometrycollection_list))
 
 #### 2.2.7 Simple feature columns (sfc)
 
+```{r}
+# sfc POINT
+point1 = st_point(c(5, 2))
+point2 = st_point(c(1, 3))
+points_sfc = st_sfc(point1, point2)
+points_sfc
+#> Geometry set for 2 features 
+#> Geometry type: POINT
+#> Dimension:     XY
+#> Bounding box:  xmin: 1 ymin: 2 xmax: 5 ymax: 3
+#> CRS:           NA
+#> POINT (5 2)
+#> POINT (1 3)
+```
 
+#### 2.2.8 The sfheaders package
+
+**sfheaders**:
+
+-   R package that speeds-up the construction, conversion and manipulation of sf objects
+
+-   focuses on building `sf` objects from vectors, matrices and data frames, rapidly, and without depending on the **sf** library; and exposing its underlying C++ code through header files (hence the name, **sfheaders**)
+
+-   Every core **sfheaders** function has a corresponding C++ implementation
+
+-   developed separately from **sf**, but aims to be fully compatible, creating valid `sf` objects
+
+Simplest use-case for **sfheaders** is demonstrated in the code chunks below with examples of building `sfg`, `sfc`, and `sf` objects showing:
+
+```{r}
+# install.packages(sfheaders)
+v = c(1, 1)
+v_sfg_sfh = sfheaders::sfg_point(obj = v)
+v_sfg_sfh # printing without sf loaded
+
+```
+
+When sf package is loaded:
+
+```{r}
+v_sfg_sf = sf::st_point(v)
+print(v_sfg_sf) == print(v_sfg_sfh)
+
+```
+
+Example how **sfheaders** creates `sfg` objects from matrices and data frames:
+
+```{r}
+# matrices
+m = matrix(1:8, ncol = 2)
+sfheaders::sfg_linestring(obj = m)
+#> LINESTRING (1 5, 2 6, 3 7, 4 8)
+# data frames
+df = data.frame(x = 1:4, y = 4:1)
+sfheaders::sfg_polygon(obj = df)
+#> POLYGON ((1 4, 2 3, 3 2, 4 1, 1 4))
+```
+
+Reusing the objects `v`, `m`, and `df` we can also build simple feature columns (`sfc`) as follows (outputs not shown):
+
+```{r}
+sfheaders::sfc_point(obj = v) sfheaders::sfc_linestring(obj = m) sfheaders::sfc_polygon(obj = df)
+```
+
+**sfheaders** is also good at ‘deconstructing’ and ‘reconstructing’ `sf` objects, meaning converting geometry columns into data frames that contain data on the coordinates of each vertex and geometry feature (and multi-feature) ids.
+
+#### **2.3 Raster data**
+
+Spatial raster data model:
+
+-   represents the world with the continuous grid of cells (often also called pixels)
+
+-   often refers to so-called regular grids, in which each cell has the same, constant size
+
+-   several other types of grids exist, including rotated, sheared, rectilinear, and curvilinear grids 
+
+-   consists of a **raster header** and **a matrix** (with rows and columns) representing equally spaced cells (often also called pixels)
+
+-   raster header defines the coordinate reference system, the extent and the origin
+
+-   origin (or starting point) is frequently the coordinate of the lower left corner of the matrix (the **terra** package, however, uses the upper left corner, by default)
+
+-   header defines the extent via the number of columns, the number of rows and the cell size resolution.
+
+    In contrast to vector data, the cell of one raster layer can only hold a **single value** - might be **continuous or categorical**
+
+Raster maps:
+
+-   represent continuous phenomena such as elevation, temperature, population density or spectral data.
+
+-   discrete features such as soil or land-cover classes can also be represented in the raster data model.
+
+Examples in the book
+
+#### **2.3.1 R packages for working with raster data**
+
+-   **terra** and **stars** packages
+
+-   **terra** - replaces the older and (in most cases) slower **raster** package
+
+Similarities and differences between **terra** and **stars**
+
+Differences:
+
+| terra                                                                                                                                              | stars                                                                                                                                                                                                                                                                                                                                                                                                     |
+|-----------------------------------|-----------------------------------------------------|
+| focuses on the most common raster data model (regular grids)                                                                                       | stores less popular models (including regular, rotated, sheared, rectilinear, and curvilinear grids)                                                                                                                                                                                                                                                                                                      |
+| handles one or multilayered rasters                                                                                                                | store raster data cubes – a raster object with many layers (e.g., bands), for many moments in time (e.g., months), and many attributes (e.g., sensor type A and sensor type B)                                                                                                                                                                                                                            |
+| store raster values as C++ pointers                                                                                                                | stores values as lists of arrays for smaller rasters or just a file path for larger ones                                                                                                                                                                                                                                                                                                                  |
+| uses its own class of objects for vector data, namely `SpatVector`, but also accepts `sf` ones                                                     | functions are closely related to the vector objects and functions in **sf**                                                                                                                                                                                                                                                                                                                               |
+| **terra** package mostly relies on a large number of built-in functions, where each function has a specific purpose (e.g., resampling or cropping) | **stars** uses some built-in functions (usually with names starting with `st_`), some existing **dplyr** functions (e.g., [`filter()`](https://rdrr.io/r/stats/filter.html) or `slice()`), and also has its own methods for existing R functions (e.g., [`split()`](https://rspatial.github.io/terra/reference/split.html) or [`aggregate()`](https://rspatial.github.io/terra/reference/aggregate.html)) |
+
+Similarities:
+
+-   all layers or elements of a data cube must have the same spatial dimensions and extent
+
+-   both packages allow to either read all of the raster data into memory or just to read its metadata – this is usually done automatically based on the input file size
+
+Importantly, it is straightforward to convert objects from **terra** to **stars** (using `st_as_stars()`) and the other way round (using [`rast()`](https://rspatial.github.io/terra/reference/rast.html)). 
+
+### **2.3.2 An introduction to terra**
+
+-   supports raster objects in R
+
+-   provides an extensive set of functions to create, read, export, manipulate and process raster datasets
+
+-   **terra** functions are usually more computationally efficient than **raster package** equivalents. On the other hand, the **raster** class system is popular and used by many other packages. i.e seamlessly translate between the two types of object to ensure backwards compatibility with older scripts and packages, for example, with the functions [`raster()`](https://rspatial.github.io/raster/reference/raster.html), [`stack()`](https://rspatial.github.io/raster/reference/stack.html), and `brick()` in the **raster** package
+
+-   **terra** provides many low-level functions that can form a foundation for developing new tools for working with raster datasets.
+
+-   **terra** also lets you work on large raster datasets that are too large to fit into the main memory.
+
+-   **terra** provides the possibility to divide the raster into smaller chunks, and processes these iteratively instead of loading the whole raster file into RAM.
+
+```{r}
+raster_filepath = system.file("raster/srtm.tif", package = "spDataLarge")
+my_rast = rast(raster_filepath)
+class(my_rast)
+#> [1] "SpatRaster"
+#> attr(,"package")
+#> [1] "terra"
+```
