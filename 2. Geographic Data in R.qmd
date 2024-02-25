@@ -465,6 +465,7 @@ Example how **sfheaders** creates `sfg` objects from matrices and data frame
 ```{r}
 # matrices
 m = matrix(1:8, ncol = 2)
+
 sfheaders::sfg_linestring(obj = m)
 #> LINESTRING (1 5, 2 6, 3 7, 4 8)
 # data frames
@@ -476,7 +477,9 @@ sfheaders::sfg_polygon(obj = df)
 Reusing the objects `v`, `m`, and `df` we can also build simple feature columns (`sfc`) as follows (outputs not shown):
 
 ```{r}
-sfheaders::sfc_point(obj = v) sfheaders::sfc_linestring(obj = m) sfheaders::sfc_polygon(obj = df)
+sfheaders::sfc_point(obj = v) 
+sfheaders::sfc_linestring(obj = m) 
+sfheaders::sfc_polygon(obj = df)
 ```
 
 **sfheaders** is also good at ‘deconstructing’ and ‘reconstructing’ `sf` objects, meaning converting geometry columns into data frames that contain data on the coordinates of each vertex and geometry feature (and multi-feature) ids.
@@ -520,7 +523,7 @@ Similarities and differences between **terra** and **stars**
 Differences:
 
 | terra                                                                                                                                              | stars                                                                                                                                                                                                                                                                                                                                                                                                     |
-|-----------------------------------|-----------------------------------------------------|
+|----------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | focuses on the most common raster data model (regular grids)                                                                                       | stores less popular models (including regular, rotated, sheared, rectilinear, and curvilinear grids)                                                                                                                                                                                                                                                                                                      |
 | handles one or multilayered rasters                                                                                                                | store raster data cubes – a raster object with many layers (e.g., bands), for many moments in time (e.g., months), and many attributes (e.g., sensor type A and sensor type B)                                                                                                                                                                                                                            |
 | store raster values as C++ pointers                                                                                                                | stores values as lists of arrays for smaller rasters or just a file path for larger ones                                                                                                                                                                                                                                                                                                                  |
@@ -550,10 +553,103 @@ Importantly, it is straightforward to convert objects from **terra** to **sta
 -   **terra** provides the possibility to divide the raster into smaller chunks, and processes these iteratively instead of loading the whole raster file into RAM.
 
 ```{r}
+# install package
+# Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = "true")
+# remotes::install_github("rspatial/terra")
+# install.packages("terra")
+
+library(terra)
 raster_filepath = system.file("raster/srtm.tif", package = "spDataLarge")
-my_rast = rast(raster_filepath)
+my_rast = terra::rast(raster_filepath)
 class(my_rast)
-#> [1] "SpatRaster"
-#> attr(,"package")
-#> [1] "terra"
+```
+
+print out the raster header (dimensions, resolution, extent, CRS) and some additional information (class, data source, summary of the raster values):
+
+```{r}
+my_rast
+```
+
+Other functions
+
+```{r}
+# dim() returns the number of rows, columns and layers; 
+dim(my_rast)
+```
+
+```{r}
+# ncell() the number of cells (pixels); 
+terra::ncell(my_rast)
+
+```
+
+```{r}
+# res() the spatial resolution; 
+terra::res(my_rast)
+```
+
+```{r}
+# ext() its spatial extent;
+
+terra::ext(my_rast)
+```
+
+```{r}
+# crs() its coordinate reference system (raster reprojection is covered in Section 7.8)
+terra::crs(my_rast)
+```
+
+```{r}
+
+# inMemory() reports whether the raster data is stored in memory or on disk, and sources specifies the file location.
+terra::inMemory(my_rast)
+
+```
+
+### **2.3.3 Basic map making**
+
+**terra** also provides [`plot()`](https://rspatial.github.io/terra/reference/plot.html) methods for its own classes.
+
+```{r}
+terra::plot(my_rast)
+```
+
+### **2.3.4 Raster classes**
+
+read-in a raster file from disk or from a server
+
+```{r}
+single_raster_file = system.file("raster/srtm.tif", package = "spDataLarge")
+single_rast = rast(raster_filepath)
+
+class(single_rast)
+```
+
+Rasters can also be created from scratch using the same [`rast()`](https://rspatial.github.io/terra/reference/rast.html) function which results in a new `SpatRaster` object as shown below:
+
+```{r}
+new_raster = rast(
+  # 6 columns and 6 rows specified by nrows and ncols
+  nrows = 6, ncols = 6, 
+  # centered around the Prime Meridian and the Equator (see xmin, xmax, ymin and ymax parameters)
+  xmin = -1.5, xmax = 1.5, ymin = -1.5, ymax = 1.5,
+  # 36 cells - Values (vals) are assigned to each cell: 1 to cell 1, 2 to cell 2, and so on.
+  vals = 1:36)
+
+```
+
+Remember: rast() fills cells row-wise (unlike matrix()) starting at the upper left corner, meaning the top row contains the values 1 to 6, the second 7 to 12, etc. For other ways of creating raster objects, see ?rast.
+
+The `SpatRaster` class also handles multiple layers, which typically correspond to a single multispectral satellite file or a time-series of rasters.
+
+```{r}
+multi_raster_file = system.file("raster/landsat.tif", package = "spDataLarge")
+multi_rast = rast(multi_raster_file)
+multi_rast
+```
+
+[`nlyr()`](https://rspatial.github.io/terra/reference/dimensions.html) retrieves the number of layers stored in a `SpatRaster` object:
+
+```{r}
+nlyr(multi_rast)
 ```
