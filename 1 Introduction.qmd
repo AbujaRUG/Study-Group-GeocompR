@@ -1,0 +1,13 @@
+---
+title: "1 - Introduction"
+format: html
+editor: visual
+---
+
+# **Geocomputation with R**
+
+Book Url: [Geocomputation with R](https://r.geocompx.org/){.uri}
+
+## **Introduction**
+
+Read up: <https://r.geocompx.org/intro>
