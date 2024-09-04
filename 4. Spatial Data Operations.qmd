@@ -891,6 +891,7 @@ tm_shape(grid_sf) +
             panel.labels = c("queen", "rook"))
 ```
 
+
 ### 4.2.5 Spatial joining
 
 Joining two non-spatial datasets relies on a shared 'key' variable, as described in Section \@ref(vector-attribute-joining). Spatial data joining applies the same concept, but instead relies on spatial relations, described in the previous section.
