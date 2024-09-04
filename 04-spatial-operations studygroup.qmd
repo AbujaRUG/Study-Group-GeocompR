@@ -1,10 +1,13 @@
 ---
-title: "Chapter 4 - Spatial Operations"
+title: "Chapter 4: Spatial Data Operations"
 subtitle: "Abuja R Users Group Geocomputation with R Study Group"
-author: "Robin Lovelace, Jakub Nowosad, James Muenchow, Document is Adapted from Geocomputation with R Book; \ Presenting - Rasha Elnimeiry with Bilikisu Wunmi Olatunji"
-format: html
+author: "Robin Lovelace, Jakub Nowosad, James Muenchow; Presenting - Rasha Elnimeiry with Bilikisu Wunmi Olatunji"
+format:
+  html:
+    toc: true
+    theme: cosmo
+    code-fold: true
 editor: visual
-toc: TRUE
 ---
 
 # Chapter 4: Spatial Data Operations {#spatial-operations}
@@ -20,7 +23,7 @@ toc: TRUE
 # remotes::install_github("geocompx/geocompkg", dependencies = TRUE, force = T)
 ```
 
-## Prerequisites {.unnumbered}
+## Notes {.unnumbered}
 
 -   **Geocomputation with R Book** (if you want to follow along in the book):\
     <https://r.geocompx.org/spatial-operations>
@@ -74,21 +77,20 @@ library(tmap)
 
 **Three ways to to subset data:**
 
-1.  **Use the `[` operator (\*\* use this or number 3)**\
-    `points[polygon, ,  op = st_intersects]`\
-    or `points[polygon, , op = st_disjoint]`
-
-2.  **Use the logical intermediary (\*\*not really needed; use #1 or #3)**
-
-    `sf::st_intersects(x = points, y = polygon) -> intersectingpoints`
-
-    `lengths(intersectingpoints) > 0       ->logicaloutcome`
-
-    `points[logicaloutcome, ]`
-
-3.  **Use the sf::st_filter + .predicate = subsettingfunction (\*\*use this or number 1)**
-
-    `points %>% st_filter(y = polygon, .predicate = st_intersects)`
+    1. **Using the `[` Operator**: 
+       ```r
+       points[polygon, , op = st_intersects]
+       ```
+    2. **Logical Intermediary**:
+       ```r
+       sf::st_intersects(x = points, y = polygon) -> intersectingpoints
+       lengths(intersectingpoints) > 0 -> logicaloutcome
+       points[logicaloutcome, ]
+       ```
+    3. **Using `sf::st_filter`**:
+       ```r
+       points %>% st_filter(y = polygon, .predicate = st_intersects)
+       ```
 
 The default topological relation used when an `op` argument is not provided is `st_intersects()`: the command `x[y, ]` is identical to `x[y, , op = st_intersects]` shown above but not `x[y, , op = st_disjoint]` (the meaning of these and other topological relations is described in the next section).
 
@@ -97,11 +99,19 @@ The `filter()` function from the **tidyverse** can also be used but this approac
 ### **Real world problem:**
 
 To demonstrate spatial subsetting, we will use the `nz` and `nz_height` datasets in the **spData** package, which contain geographic data on the 16 main regions and 101 highest points in New Zealand, respectively, in a projected coordinate reference system. The following code chunk creates an object representing Canterbury, then uses spatial subsetting to return all high points in the region.
-
-Goal: find how many points (nz_height) fall within the polygon (canterbury)
-
-We have these datasets: ***nz_height*** (point), ***nz*** (polygon).\
+- **Objective**: Identify high elevation points within the Canterbury region.
+  
+  - **Datasets**: We have these datasets: ***nz_height*** (point), ***nz*** (polygon).\
 We want to subset **points** (elevation points) that fall within a **polygon** (canterbury region).
+    - `nz_height` (points)
+    - `nz` (polygons)
+
+  - **Steps**:
+    1. Ensure both spatial objects are in the same coordinate reference system.
+    2. Use various subsetting methods to identify points within the Canterbury region.
+
+
+
 
 ```{r 04-spatial-operations-3}
 
@@ -114,10 +124,7 @@ nz %>% view
 
 ```
 
-First - **always** make sure both spatial objects are:
 
-1\. spatial objects and\
-2. both spatial objects are in the same crs (many ways to do this; covered in later chapters).
 
 ```{r doublecheck-crs, warning=F}
 class(nz)
